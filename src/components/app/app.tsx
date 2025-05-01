@@ -21,15 +21,23 @@ import {
   NotFound404
 } from '@pages';
 import { ProtectedRoute } from '../protected-route/protected-route';
+import { useEffect } from 'react';
+
+import { useDispatch } from '../../services/store';
+import { getIngredients } from '../../services/slices/ingredientsSlice';
 
 const App = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const state = location.state as { background?: Location };
+  const dispatch = useDispatch();
 
   const handleModalClose = () => {
     navigate(-1);
   };
+  useEffect(() => {
+    dispatch(getIngredients());
+  }, [dispatch]);
 
   return (
     <div className={styles.app}>
