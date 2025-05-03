@@ -23,20 +23,24 @@ import {
 import { ProtectedRoute } from '../protected-route/protected-route';
 import { useEffect } from 'react';
 
-import { useDispatch } from '../../services/store';
+import { useDispatch, useSelector } from '../../services/store';
 import { getIngredients } from '../../services/slices/ingredientsSlice';
+import { fetchUser } from '../../services/slices/authSlice';
 
 const App = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const state = location.state as { background?: Location };
+
   const dispatch = useDispatch();
 
   const handleModalClose = () => {
     navigate(-1);
   };
+
   useEffect(() => {
     dispatch(getIngredients());
+    dispatch(fetchUser());
   }, [dispatch]);
 
   return (

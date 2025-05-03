@@ -6,6 +6,7 @@ import {
   useSelector as selectorHook
 } from 'react-redux';
 
+import authReducer from './slices/authSlice';
 import ingredientsReducer from './slices/ingredientsSlice';
 
 const rootReducer = () => {
@@ -14,6 +15,7 @@ const rootReducer = () => {
 
 export const store = configureStore({
   reducer: {
+    auth: authReducer,
     ingredients: ingredientsReducer
   }
 });
