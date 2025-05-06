@@ -8,15 +8,14 @@ import {
 
 import authReducer from './slices/authSlice';
 import ingredientsReducer from './slices/ingredientsSlice';
-
-const rootReducer = () => {
-  ingredients: ingredientsReducer;
-};
-
+import constructorBurgerReducer from './slices/constructorBurgerSlice';
+import ordersReducer from './slices/ordersSlice';
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    ingredients: ingredientsReducer
+    ingredients: ingredientsReducer,
+    constructorBurger: constructorBurgerReducer,
+    orders: ordersReducer
   }
 });
 

@@ -19,16 +19,10 @@ const initialState: IngredientsState = {
 
 export const getIngredients = createAsyncThunk(
   'ingredients/fetchAllIngredients',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await getIngredientsApi();
-      return response;
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        return rejectWithValue(error.message);
-      }
-    }
-  }
+  (_, { rejectWithValue }) =>
+    getIngredientsApi()
+      .then((response) => response)
+      .catch((err) => rejectWithValue(err.message))
 );
 
 const ingredientsSlice = createSlice({
@@ -49,13 +43,10 @@ const ingredientsSlice = createSlice({
         state.loading = false;
         state.data = action.payload ?? [];
       })
-      .addCase(
-        getIngredients.rejected,
-        (state, action: PayloadAction<IngredientsState['error']>) => {
-          state.loading = false;
-          state.error = action.payload as string;
-        }
-      );
+      .addCase(getIngredients.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
   }
 });
 
