@@ -32,7 +32,7 @@ type OrdersState = {
   };
 };
 
-const initialState: OrdersState = {
+export const initialState: OrdersState = {
   feed: {
     orders: [],
     total: 0,

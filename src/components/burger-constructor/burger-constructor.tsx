@@ -7,6 +7,7 @@ import {
   createOrder
 } from '../../services/slices/ordersSlice';
 import { useNavigate } from 'react-router-dom';
+import { clearConstructorBurger } from '../../services/slices/constructorBurgerSlice';
 
 export const BurgerConstructor: FC = () => {
   const { buns, ingredients } = useSelector((state) => state.constructorBurger);
@@ -33,6 +34,7 @@ export const BurgerConstructor: FC = () => {
   };
   const closeOrderModal = () => {
     dispatch(clearOrderModal());
+    dispatch(clearConstructorBurger());
   };
 
   const price = useMemo(
