@@ -1,17 +1,28 @@
 /// <reference types="cypress" />
-
 import {
   BurgerConstructorSelectors,
   ModalSelectors
 } from '../support/selectors';
 
+const INGREDIENTS = {
+  BUN_TOP: 'Флюоресцентная булка R2-D3 (верх)',
+  BUN_BOTTOM: 'Флюоресцентная булка R2-D3 (низ)',
+  MAIN: 'Биокотлета из марсианской Магнолии'
+};
+
+const INGREDIENT_IDS = {
+  BUN_TOP_ID: '643d69a5c3f7b9001cfa093d',
+  MAIN_ID: '643d69a5c3f7b9001cfa0941',
+  BUN_BOTTOM_ID: '643d69a5c3f7b9001cfa093d'
+};
+
 describe('Проверка оформления заказа', () => {
   beforeEach(() => {
-    cy.intercept('GET', 'https://norma.nomoreparties.space/api/ingredients', {
+    cy.intercept('GET', '**/api/ingredients', {
       fixture: 'ingredients.json'
     }).as('fetchIngredients');
 
-    cy.intercept('GET', 'https://norma.nomoreparties.space/api/auth/user', {
+    cy.intercept('GET', '**/api/auth/user', {
       fixture: 'user.json'
     }).as('getUser');
 
@@ -21,7 +32,14 @@ describe('Проверка оформления заказа', () => {
   });
 
   it('Должен создать заказ и отобразить номер заказа в модальном окне и очистить конструктор', () => {
+    cy.wait('@getUser').then((interception) => {
+      expect(interception.response.statusCode).to.equal(200);
+    });
     cy.wait('@fetchIngredients');
+
+    cy.get(BurgerConstructorSelectors.IngredientBunTopEmpty).should('exist');
+    cy.get(BurgerConstructorSelectors.IngredientMainEmpty).should('exist');
+    cy.get(BurgerConstructorSelectors.IngredientBunBottomEmpty).should('exist');
 
     cy.get(BurgerConstructorSelectors.ingredientTypeBun)
       .first()
@@ -33,29 +51,34 @@ describe('Проверка оформления заказа', () => {
       .find('button')
       .click();
 
-    let constructorIngredients: string[] = [];
-    cy.getReduxState((state) => state.constructorBurger).then((constructor) => {
-      expect(constructor.buns).to.exist;
-      expect(constructor.ingredients).to.have.length.greaterThan(0);
+    cy.get(BurgerConstructorSelectors.IngredientBunTop).should(
+      'contain',
+      INGREDIENTS.BUN_TOP
+    );
+    cy.get(BurgerConstructorSelectors.IngredientBunBottom).should(
+      'contain',
+      INGREDIENTS.BUN_BOTTOM
+    );
+    cy.get(BurgerConstructorSelectors.IngredientMain).should(
+      'contain',
+      INGREDIENTS.MAIN
+    );
 
-      constructorIngredients = [
-        constructor.buns._id,
-        ...constructor.ingredients.map((i) => i._id),
-        constructor.buns._id
+    cy.get(BurgerConstructorSelectors.orderButton).should('exist');
+
+    cy.intercept('POST', '**/api/orders', (req) => {
+      const expectedIngredients = [
+        INGREDIENT_IDS.BUN_TOP_ID,
+        INGREDIENT_IDS.MAIN_ID,
+        INGREDIENT_IDS.BUN_BOTTOM_ID
       ];
-    });
 
-    cy.intercept(
-      'POST',
-      'https://norma.nomoreparties.space/api/orders',
-      (req) => {
-        expect(req.body.ingredients).to.deep.equal(constructorIngredients);
+      expect(req.body.ingredients).to.deep.equal(expectedIngredients);
 
-        req.reply({
-          fixture: 'order.json'
-        });
-      }
-    ).as('createOrder');
+      req.reply({
+        fixture: 'order.json'
+      });
+    }).as('createOrder');
 
     cy.get(BurgerConstructorSelectors.orderButton).click();
 
@@ -71,11 +94,11 @@ describe('Проверка оформления заказа', () => {
 
       cy.get(ModalSelectors.modalClose).click();
       cy.get(ModalSelectors.modal).should('not.exist');
-      cy.getReduxState((state) => state.constructorBurger).then(
-        (constructor) => {
-          expect(constructor.buns).to.be.null;
-          expect(constructor.ingredients).to.be.an('array').that.is.empty;
-        }
+
+      cy.get(BurgerConstructorSelectors.IngredientBunTopEmpty).should('exist');
+      cy.get(BurgerConstructorSelectors.IngredientMainEmpty).should('exist');
+      cy.get(BurgerConstructorSelectors.IngredientBunBottomEmpty).should(
+        'exist'
       );
     });
   });
